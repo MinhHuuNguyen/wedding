@@ -2,6 +2,7 @@ import cv2
 import streamlit as st
 
 from face_modules import recognize_face, detect_face, analyze_face
+from speech_modules import sound
 from utils import draw_bbox
 
 
@@ -70,3 +71,8 @@ while RUN_ALL:
             NEXT_BUTTON = False
 
     FRAME_WINDOW.image(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+
+if st.button('Record'):
+    with st.spinner(f'Recording for {sound.duration} seconds ....'):
+        sound.record()
+    st.success("Recording completed")
