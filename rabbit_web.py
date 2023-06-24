@@ -1,5 +1,9 @@
+import time
+import threading
+
 import cv2
 import streamlit as st
+from streamlit.runtime.scriptrunner import add_script_run_ctx
 
 from face_modules import recognize_face, detect_face, analyze_face
 from speech_modules import sound, autoplay_audio
@@ -8,10 +12,13 @@ from utils import draw_bbox, crop_bbox
 
 # COMPONENTS
 st.set_page_config(layout="wide")
+
 COL_1, COL_2 = st.columns([3, 1])
 FRAME_WINDOW = COL_1.image([])
 NEXT_BUTTON = COL_2.button('Tiếp tục...', use_container_width=False)
 WEBCAM_CAPTURE = cv2.VideoCapture(0)
+WEBCAM_CAPTURE.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+WEBCAM_CAPTURE.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
 
 # CONFIGS
@@ -24,6 +31,9 @@ RUN_ALL = COL_2.checkbox('Run')
 RUN_FACE_RECOGNITION = True
 RUN_FACE_ANALYSIS = False
 is_shown_reg_result = False
+
+dang_nhap_thanh_cong_thread = threading.Thread(target=autoplay_audio, args=('dang_nhap_thanh_cong',))
+add_script_run_ctx(dang_nhap_thanh_cong_thread)
 
 
 result_fr_list, result_fa_list = [], []
@@ -43,11 +53,8 @@ while RUN_ALL:
         if len(result_fr_list) >= NUM_CONFIRMED_FRAMES:
             RUN_FACE_RECOGNITION = not all(result_fr_list[-1 * NUM_CONFIRMED_FRAMES:])
             if not RUN_FACE_RECOGNITION:
-                # autoplay_audio()
-                COL_2.text('Đăng nhập thành công')
-                COL_2.text('Xin chào chú Thỏ...')
-                COL_2.text('Cơ mà chú Thỏ chưa cười tươi...')
-                COL_2.text('Chú Thỏ bấm Next rồi cười tươi vào nhé...')
+                # 'Đăng nhập thành công'
+                dang_nhap_thanh_cong_thread.start()
 
     # Phase 2: Finish face recognition, run face analysis
     elif not RUN_FACE_RECOGNITION and RUN_FACE_ANALYSIS:
