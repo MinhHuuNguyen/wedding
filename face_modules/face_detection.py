@@ -1,7 +1,9 @@
 from deepface import DeepFace
 import cv2
 
+
 DET_MODEL_NAME = 'opencv' # opencv, ssd
+
 
 def detect_face(face, short_size=None):
     if short_size is not None:
@@ -24,7 +26,3 @@ def detect_face(face, short_size=None):
         result['facial_area']['h'] *= (old_dim[0] / new_dim[1])
 
     return result
-
-
-if __name__ == '__main__':
-    print(detect_face('image/minh_2.jpg'))

@@ -1,30 +1,20 @@
-from deepface import DeepFace
 import cv2
+import numpy as np
+from deepface import DeepFace
+from deepface.extendedmodels.Emotion import *
 
 DET_MODEL_NAME = 'opencv' # opencv, ssd
 
-def analyze_face(face, short_size=None):
-    if short_size is not None:
-        old_dim = face.shape[:2]
-        new_dim = (short_size, int(short_size * old_dim[0] / old_dim[1]))
-        face = cv2.resize(face, new_dim, interpolation=cv2.INTER_AREA)
 
-    result = DeepFace.analyze(
-        img_path=face, 
-        actions=['emotion'],
-        enforce_detection=False,
-        detector_backend="opencv",
-        silent=True
-    )[0]
-
-    if short_size is not None:
-        # Resize back to original size
-        result['region']['x'] *= (old_dim[1] / new_dim[0])
-        result['region']['y'] *= (old_dim[0] / new_dim[1])
-        result['region']['w'] *= (old_dim[1] / new_dim[0])
-        result['region']['h'] *= (old_dim[0] / new_dim[1])
-    return result
+EMOTION_MODEL = DeepFace.build_model('Emotion')
 
 
-if __name__ == '__main__':
-    print(analyze_face('image/minh_2.jpg'))
+def analyze_face(face_img):
+    img_gray = cv2.cvtColor(face_img, cv2.COLOR_BGR2GRAY)
+    img_gray = cv2.resize(img_gray, (48, 48))
+    img_gray = np.expand_dims(img_gray, axis=0)
+
+    emotion_predictions = EMOTION_MODEL.predict(img_gray, verbose=0)[0]
+
+    # return Emotion.labels[np.argmax(emotion_predictions)]
+    return np.argmax(emotion_predictions)

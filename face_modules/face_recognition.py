@@ -1,39 +1,36 @@
-from deepface import DeepFace
 import cv2
+import numpy as np
+from deepface import DeepFace
+from deepface.commons import functions, distance as distance_fn
+
+
+# REGISTER_FACE_PATH = 'image/register_thao_anh.jpeg'
+REGISTER_FACE_PATH = 'image/register_minh.jpeg'
+
 
 REG_MODEL_NAME = 'ArcFace' # SFace, DeepID, OpenFace, ArcFace
-DET_MODEL_NAME = 'opencv' # opencv, ssd
+FR_MODEL = DeepFace.build_model(REG_MODEL_NAME)
+FR_IMG_TARGET_SIZE = functions.find_target_size(REG_MODEL_NAME)
+FR_EMB_THRESHOLD = distance_fn.findThreshold(REG_MODEL_NAME, 'cosine')
 
-REGISTER_FACE_PATH = 'image/register_minh.jpeg'
-# REGISTER_FACE_PATH = 'image/register_thao_anh.jpeg'
-REGISTER_FACE = cv2.imread(REGISTER_FACE_PATH)
 
-def recognize_face(face, short_size=None):
-    if short_size is not None:
-        old_dim = face.shape[:2]
-        new_dim = (short_size, int(short_size * old_dim[0] / old_dim[1]))
-        face = cv2.resize(face, new_dim, interpolation=cv2.INTER_AREA)
+def get_emb(face_img):
+    face_img = cv2.resize(face_img, FR_IMG_TARGET_SIZE)
+    face_img = np.expand_dims(face_img, axis=0)
+    face_img = functions.normalize_input(img=face_img, normalization='base')
+    face_embedding = FR_MODEL.predict(face_img, verbose=0)[0]
 
-    result = DeepFace.verify(
-        img1_path=face,
-        img2_path=REGISTER_FACE,
-        model_name=REG_MODEL_NAME,
-        detector_backend=DET_MODEL_NAME,
-        distance_metric='cosine',
-        enforce_detection=False,
-        align=True,
-        normalization='base',
-    )
+    return face_embedding
 
-    if short_size is not None:
-        # Resize back to original size
-        result['facial_areas']['img1']['x'] *= (old_dim[1] / new_dim[0])
-        result['facial_areas']['img1']['y'] *= (old_dim[0] / new_dim[1])
-        result['facial_areas']['img1']['w'] *= (old_dim[1] / new_dim[0])
-        result['facial_areas']['img1']['h'] *= (old_dim[0] / new_dim[1])
 
-    # print(result)
-    return result
+REGISTER_FACE_EMB = get_emb(cv2.imread(REGISTER_FACE_PATH))
 
-if __name__ == '__main__':
-    print(recognize_face('image/minh_2.jpg'))
+
+def recognize_face(face_img):
+    if face_img is not None:
+        checking_emb = get_emb(face_img)
+        distance = distance_fn.findCosineDistance(REGISTER_FACE_EMB, checking_emb)
+
+        return distance <= FR_EMB_THRESHOLD
+
+    return False
