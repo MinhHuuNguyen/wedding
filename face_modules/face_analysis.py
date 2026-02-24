@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 from deepface import DeepFace
-from deepface.extendedmodels.Emotion import *
+from deepface.extendedmodels import Emotion
 
 DET_MODEL_NAME = 'opencv' # opencv, ssd
 
@@ -16,5 +16,5 @@ def analyze_face(face_img):
 
     emotion_predictions = EMOTION_MODEL.predict(img_gray, verbose=0)[0]
 
-    # return Emotion.labels[np.argmax(emotion_predictions)]
-    return np.argmax(emotion_predictions)
+    return Emotion.labels[np.argmax(emotion_predictions)]
+    # return np.argmax(emotion_predictions)
