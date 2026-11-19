@@ -1,7 +1,7 @@
 faster-whisper==0.5.1
 deepface==0.0.78
 streamlit==1.9.0
-protobuf==3.19.0
+protobuf==5.29.6
 altair==4.0
 watchdog==3.0.0
 pyaudio==0.2.3
